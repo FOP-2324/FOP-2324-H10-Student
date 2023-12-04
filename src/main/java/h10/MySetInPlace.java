@@ -29,7 +29,7 @@ public class MySetInPlace<T> extends MySet<T> {
         super(head, cmp);
     }
 
-     @Override
+    @Override
     @StudentImplementationRequired
     public MySet<T> subset(Predicate<? super T> pred) {
         return crash(); // TODO: H1.2 - remove if implemented
@@ -52,5 +52,4 @@ public class MySetInPlace<T> extends MySet<T> {
     protected MySet<T> intersectionListItems(ListItem<ListItem<T>> heads) {
         return crash(); // TODO: H4.2 - remove if implemented
     }
-
 }

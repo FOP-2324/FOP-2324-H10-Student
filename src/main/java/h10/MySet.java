@@ -55,7 +55,7 @@ public abstract class MySet<T> {
      * @return {@code true} if the given list is ordered according to the given comparator
      */
     @DoNotTouch
-    private boolean isOrdered(ListItem<T> head, Comparator<? super T> cmp) {
+    protected boolean isOrdered(ListItem<T> head, Comparator<? super T> cmp) {
         if (head == null) {
             return true;
         }
@@ -75,7 +75,7 @@ public abstract class MySet<T> {
      * @return {@code true} if the given list contains pairwise different elements according to the given comparator
      */
     @DoNotTouch
-    private boolean isPairwiseDifferent(ListItem<T> head, Comparator<? super T> cmp) {
+    protected boolean isPairwiseDifferent(ListItem<T> head, Comparator<? super T> cmp) {
         for (ListItem<T> current = head; current != null; current = current.next) {
             for (ListItem<T> other = current.next; other != null; other = other.next) {
                 if (cmp.compare(current.key, other.key) == 0) {
@@ -198,5 +198,4 @@ public abstract class MySet<T> {
     public String toString() {
         return String.valueOf(head);
     }
-
 }

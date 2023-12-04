@@ -52,5 +52,4 @@ public class MySetAsCopy<T> extends MySet<T> {
     protected MySet<T> intersectionListItems(ListItem<ListItem<T>> heads) {
         return crash(); // TODO: H4.1 - remove if implemented
     }
-
 }

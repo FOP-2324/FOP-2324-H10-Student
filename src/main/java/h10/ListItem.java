@@ -87,5 +87,4 @@ public class ListItem<T> {
         sb.append("null}");
         return sb.toString();
     }
-
 }
