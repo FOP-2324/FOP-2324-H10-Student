@@ -1,7 +1,6 @@
-import org.sourcegrade.jagr.gradle.task.grader.GraderRunTask
-
 plugins {
     alias(libs.plugins.algomate)
+    alias(libs.plugins.jagr.gradle)
 }
 
 exercise {
@@ -20,10 +19,19 @@ submission {
     requireTests = false
 }
 
-tasks {
-    withType<GraderRunTask> {
-        doFirst {
-            throw GradleException("Public tests will be released in the next few days.")
+dependencies {
+    implementation(libs.algoutils.student)
+}
+
+jagr {
+    graders {
+        val graderPublic by getting {
+            graderName.set("H10-Public")
+            rubricProviderName.set("h10.H10_RubricProviderPublic")
+            configureDependencies {
+                implementation(libs.algoutils.tutor)
+                implementation(libs.junit.pioneer)
+            }
         }
     }
 }
