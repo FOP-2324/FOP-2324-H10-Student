@@ -132,7 +132,7 @@ public abstract class ComplexTest extends SimpleTest {
 
         // Use MockedConstruction to disable the constructor of MySet where the visitation will be falsely counted
         try (MockedConstruction<?> construction = Mockito.mockConstruction(getClassType())) {
-            MySet<VisitorElement<Integer>> result = source.difference(other);
+            MySet<VisitorElement<Integer>> result = operation().apply(source, other);
             builder.add("Result", result.toString());
             builder.add("Source after", source.toString());
             builder.add("Other after", other.toString());
