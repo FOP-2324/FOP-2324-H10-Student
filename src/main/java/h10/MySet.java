@@ -131,22 +131,14 @@ public abstract class MySet<T> {
      */
     @DoNotTouch
     protected ListItem<ListItem<T>> toListItem(ListItem<MySet<T>> others) {
-        ListItem<ListItem<T>> heads = null;
-        ListItem<ListItem<T>> tails = null;
+        ListItem<ListItem<T>> heads = new ListItem<>(head);
+        ListItem<ListItem<T>> tails = heads;
 
-        // Retrieve pointers to head pointer from all sets
-        if (head != null) {
-            heads = new ListItem<>(head);
-            tails = heads;
-        }
+        // Retrieve pointers to a head pointer from all sets
         for (ListItem<MySet<T>> otherSets = others; otherSets != null; otherSets = otherSets.next) {
             ListItem<T> otherHead = otherSets.key.head;
             ListItem<ListItem<T>> item = new ListItem<>(otherHead);
-            if (heads == null) {
-                heads = item;
-            } else {
-                tails.next = item;
-            }
+            tails.next = item;
             tails = item;
         }
         return heads;

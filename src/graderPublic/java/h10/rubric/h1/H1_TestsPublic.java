@@ -1,35 +1,43 @@
 package h10.rubric.h1;
 
 import h10.ListItem;
-import h10.VisitorSet;
-import h10.converter.ListItemConverter;
-import h10.converter.PredicateConverter;
-import h10.rubric.SimpleTest;
-import h10.utils.ListItems;
-import h10.utils.TestConstants;
-import h10.visitor.VisitorElement;
-import org.jetbrains.annotations.Nullable;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assumptions;
+import h10.MySet;
+import h10.MySetAsCopy;
+import h10.MySetInPlace;
+import h10.Sets;
+import h10.rubric.H10_Test;
+import h10.rubric.TestConstants;
+import h10.util.ListItems;
+import h10.util.VisitorElement;
+import org.apache.logging.log4j.util.TriConsumer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.converter.ConvertWith;
-import org.junitpioneer.jupiter.json.JsonClasspathSource;
-import org.junitpioneer.jupiter.json.Property;
+import org.opentest4j.AssertionFailedError;
 import org.sourcegrade.jagr.api.rubric.TestForSubmission;
+import org.sourcegrade.jagr.api.testing.extension.JagrExecutionCondition;
 import org.tudalgo.algoutils.tutor.general.annotation.SkipAfterFirstFailedTest;
 import org.tudalgo.algoutils.tutor.general.assertions.Assertions2;
 import org.tudalgo.algoutils.tutor.general.assertions.Context;
+import org.tudalgo.algoutils.tutor.general.json.JsonParameterSet;
+import org.tudalgo.algoutils.tutor.general.json.JsonParameterSetTest;
 
+import java.util.Comparator;
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
+/**
+ * Defines a base class for testing a method for the H1 assignment (public tests). A subclass of this class needs
+ * to implement at least {@link #getClassType()} and {@link #setProvider()} since the criteria for {@link MySetAsCopy}
+ * and {@link MySetInPlace} are the same.
+ *
+ * @author Nhan Huynh
+ */
 @TestForSubmission
 @DisplayName("H1 | subset(MySet)")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -39,88 +47,26 @@ import java.util.function.Predicate;
     threadMode = Timeout.ThreadMode.SEPARATE_THREAD
 )
 @SkipAfterFirstFailedTest(TestConstants.SKIP_AFTER_FIRST_FAILED_TEST)
-public abstract class H1_TestsPublic extends SimpleTest {
+public abstract class H1_TestsPublic extends H10_Test {
 
-    protected static final String TEST_RESOURCE_PATH = "h1/";
-
+    /**
+     * The name of the method to be tested.
+     */
     protected static final String METHOD_NAME = "subset";
-
-    /**
-     * The tested source set.
-     */
-    protected @Nullable VisitorSet<Integer> source;
-
-    /**
-     * The result of the method call.
-     */
-    protected @Nullable VisitorSet<Integer> result;
-
-    /**
-     * The context builder for the test.
-     */
-    protected @Nullable Context.Builder<?> context;
 
     @Override
     public String getMethodName() {
         return METHOD_NAME;
     }
 
-    @AfterEach
-    public void tearDown() {
-        assertRequirement();
-        assertVisitation();
-    }
-
-    /**
-     * Sets the source set, result set, and context builder for the test to validate.
-     *
-     * @param source  the source set
-     * @param result  the result set
-     * @param context the context builder
-     */
-    protected void afterCheck(VisitorSet<Integer> source, VisitorSet<Integer> result, Context.Builder<?> context) {
-        this.source = source;
-        this.result = result;
-        this.context = context;
-    }
-
-    /**
-     * Asserts that each node in the source set is visited only once.
-     */
-    public void assertVisitation() {
-        Assumptions.assumeTrue(source != null);
-        Assumptions.assumeTrue(context != null);
-
-        // Nodes must be visited only once
-        List<VisitorElement<Integer>> failed = source.stream()
-            .filter(element -> element.visited() > 1)
-            .toList();
-        Assertions2.assertTrue(
-            failed.isEmpty(),
-            context.add("Nodes visited more than once", failed).build(),
-            r -> "Expected no visited node more than once, got %s.".formatted(failed)
-        );
-    }
-
-    /**
-     * Asserts the requirement of the test.
-     */
-    public abstract void assertRequirement();
-
     @Order(0)
-    @DisplayName("Die Methode subset(MySet) nimmt  Elemente in die Ergebnismenge nicht auf, falls das Prädikat nicht "
+    @DisplayName("Die Methode subset(MySet) ninmmt Elemente in die Ergebnismenge nicht auf, falls das Prädikat nicht "
         + "erfüllt wird.")
-    @ParameterizedTest(name = "Elements = {0}")
-    @JsonClasspathSource({
-        TEST_RESOURCE_PATH + "criterion1_testcase1.json",
-        TEST_RESOURCE_PATH + "criterion1_testcase2.json",
-        TEST_RESOURCE_PATH + "criterion1_testcase3.json",
-    })
-    public void testPredicateFalse(
-        @ConvertWith(ListItemConverter.Int.class) @Property("head") ListItem<Integer> head
-    ) {
-        VisitorSet<Integer> source = visit(head);
-        // Drop all elements
+    @ExtendWith(JagrExecutionCondition.class)
+    @ParameterizedTest
+    @JsonParameterSetTest(value = "H1_Criterion_01.json", customConverters = CUSTOM_CONVERTERS)
+    public void testDropAll(JsonParameterSet parameters) {
+        Context.Builder<?> contextBuilder = contextBuilder();
         Predicate<? super VisitorElement<Integer>> predicate = new Predicate<>() {
             @Override
             public boolean test(VisitorElement<Integer> element) {
@@ -134,75 +80,153 @@ public abstract class H1_TestsPublic extends SimpleTest {
                 return "Drop all";
             }
         };
-        Context.Builder<?> context = contextBuilder()
-            .add("Comparator", DEFAULT_COMPARATOR)
-            .add("Predicate", predicate)
-            .add("Source", source.toString());
-        VisitorSet<Integer> result = visit(source.subset(predicate));
-        context.add("Result", result.toString());
 
-        // Since we the predicate drop all elements, the head of the set must be null
-        Assertions2.assertFalse(
-            result.iterator().hasNext(),
-            context.build(),
-            r -> "Subset should be empty, but got %s.".formatted(result)
-        );
-        afterCheck(source, result, context);
+        // Source
+        ListItem<Integer> head = parameters.get("source");
+        ListItem<VisitorElement<Integer>> visitableHead = ListItems.map(head, VisitorElement::new);
+        MySet<VisitorElement<Integer>> source = createSet(visitableHead);
+
+        contextBuilder.add("Source", getInputContext(getDefaultComparator(), predicate, source));
+
+        // Result
+        MySet<VisitorElement<Integer>> result = source.subset(predicate);
+        MySet<VisitorElement<Integer>> expected = createSet(null);
+
+        Context.Builder<?> resultContext = Assertions2.contextBuilder().subject("Output");
+        resultContext.add("Source set afterwards", source.toString())
+            .add("Actual output set", result.toString())
+            .add("Expected output set", expected.toString());
+        contextBuilder.add("Result", resultContext.build());
+
+        // Validation of the result
+        Context context = contextBuilder.build();
+        Assertions2.assertFalse(Sets.iterator(result).hasNext(), context, r -> "The output set is not empty");
+        assertVisitation(source, context);
+        assertRequirement(source, result, contextBuilder);
     }
+
+    /**
+     * Returns the input context information of an operation.
+     *
+     * @param cmp       the comparator used to compare the elements in the set
+     * @param predicate the predicate to filter the element in the set
+     * @param input     the input set to filter the element from
+     * @return the input context information of an operation
+     */
+    protected Context getInputContext(Comparator<?> cmp, Predicate<?> predicate, MySet<?> input) {
+        return Assertions2.contextBuilder().subject("Input")
+            .add("Source set", input)
+            .add("Comparator", cmp)
+            .add("Predicate", predicate)
+            .build();
+    }
+
+    /**
+     * Checks whether the given set is only visited once.
+     *
+     * @param set     the set to check
+     * @param context the context to report the result to
+     * @param <T>     the type of the elements in the set
+     * @throws AssertionFailedError if the set is visited more than once
+     */
+    protected <T extends Comparable<T>> void assertVisitation(MySet<VisitorElement<T>> set, Context context) {
+        Assertions2.assertTrue(
+            Sets.stream(set).noneMatch(element -> element.visited() > 1),
+            context,
+            result -> "Nodes were visited more than once"
+        );
+    }
+
+    /**
+     * Checks whether the given source and output satisfies the requirement of the method (as copy or in place).
+     *
+     * @param <T>     the type of the elements in the source
+     * @param source  the source to check
+     * @param output  the output to check
+     * @param context the context to report the result to
+     * @throws AssertionFailedError if the source does not satisfy the requirement
+     */
+    protected <T extends Comparable<T>> void assertRequirement(
+        MySet<T> source,
+        MySet<T> output,
+        Context.Builder<?> context
+    ) {
+        this.<T>requirementCheck().accept(source, output, context);
+    }
+
+    /**
+     * Returns a function that accepts an input and output set and a context and checks whether the given input and
+     * output satisfies the requirement of the method (as copy or in place).
+     *
+     * @param <T> the type of the elements in the input
+     * @return a function that accepts an input and output set and a context and checks whether the given input and
+     */
+    protected abstract <T extends Comparable<T>> TriConsumer<MySet<T>, MySet<T>, Context.Builder<?>> requirementCheck();
 
     @Order(1)
     @DisplayName("Die Methode subset(MySet) gibt das korrekte Ergebnis für eine komplexe Eingabe zurück.")
-    @ParameterizedTest(name = "Elements = {0}")
-    @JsonClasspathSource({
-        TEST_RESOURCE_PATH + "criterion2_testcase1.json",
-        TEST_RESOURCE_PATH + "criterion2_testcase2.json",
-        TEST_RESOURCE_PATH + "criterion2_testcase3.json",
-    })
-    public void testPredicateComplex(
-        @ConvertWith(ListItemConverter.Int.class) @Property("head") ListItem<Integer> head,
-        @ConvertWith(PredicateConverter.BasicIntMath.class) @Property("predicate") Predicate<Integer> predicate,
-        @ConvertWith(ListItemConverter.Int.class) @Property("expected") ListItem<Integer> expected
-    ) {
-        VisitorSet<Integer> source = visit(head);
-        Predicate<VisitorElement<Integer>> test = new Predicate<>() {
+    @ExtendWith(JagrExecutionCondition.class)
+    @ParameterizedTest
+    @JsonParameterSetTest(value = "H1_Criterion_02.json", customConverters = CUSTOM_CONVERTERS)
+    public void testComplex(JsonParameterSet parameters) {
+        Context.Builder<?> contextBuilder = contextBuilder();
+        Predicate<VisitorElement<Integer>> predicate = new Predicate<>() {
+
+            private final Predicate<Integer> underlying = parameters.get("predicate");
+
             @Override
             public boolean test(VisitorElement<Integer> x) {
-                return predicate.test(x.get());
+                return underlying.test(x.get());
             }
 
             @Override
             public String toString() {
-                return predicate.toString();
+                return underlying.toString();
             }
         };
 
-        Context.Builder<?> context = contextBuilder()
-            .add("Comparator", DEFAULT_COMPARATOR)
-            .add("Predicate", test)
-            .add("Source", source.toString());
+        // Source
+        ListItem<Integer> head = parameters.get("source");
+        ListItem<VisitorElement<Integer>> visitableHead = ListItems.map(head, VisitorElement::new);
+        MySet<VisitorElement<Integer>> source = createSet(visitableHead);
 
-        VisitorSet<Integer> result = visit(source.subset(test));
-        context.add("Result", result.toString());
+        contextBuilder.add("Input", getInputContext(getDefaultComparator(), predicate, source));
 
-        Iterator<Integer> expectedIt = ListItems.iterator(expected);
-        Iterator<Integer> actualIt = result.peekIterator();
+        // Result
+        MySet<VisitorElement<Integer>> result = source.subset(predicate);
+        // Expected
+        ListItem<Integer> expectedHead = parameters.get("expected");
+        ListItem<VisitorElement<Integer>> expectedVisitableHead = ListItems.map(expectedHead, VisitorElement::new);
+        MySet<VisitorElement<Integer>> expected = createSet(expectedVisitableHead);
 
-        while (expectedIt.hasNext() && actualIt.hasNext()) {
-            int e = expectedIt.next();
-            int a = actualIt.next();
+        Context.Builder<?> resultContext = Assertions2.contextBuilder().subject("Output");
+        resultContext.add("Source set afterwards", source.toString())
+            .add("Actual output set", result.toString())
+            .add("Expected output set", expected.toString());
+        contextBuilder.add("Result", resultContext.build());
+
+        // Validation of the result
+        Iterator<VisitorElement<Integer>> actualIt = Sets.iterator(result);
+        Iterator<VisitorElement<Integer>> expectedIt = Sets.iterator(expected);
+        Context context = contextBuilder.build();
+
+        while (actualIt.hasNext() && expectedIt.hasNext()) {
+            VisitorElement<Integer> a = actualIt.next();
+            VisitorElement<Integer> e = expectedIt.next();
             Assertions2.assertEquals(
-                e, a,
-                context.add("Expected node", e).add("Actual node", a).build(),
-                r -> "Expected node %s, but was %s".formatted(e, a)
+                e.peek(),
+                a.peek(),
+                context,
+                r -> "The result set contains the wrong elements"
             );
         }
 
         // The expected size must be equal to actual size
-        Assertions2.assertFalse(expectedIt.hasNext(), context.build(),
+        Assertions2.assertFalse(expectedIt.hasNext(), context,
             r -> "Expected list contains more element than actual list");
-        Assertions2.assertFalse(actualIt.hasNext(), context.build(),
+        Assertions2.assertFalse(actualIt.hasNext(), context,
             r -> "Actual list contains more element than expected list");
-
-        afterCheck(source, result, context);
+        assertVisitation(source, context);
+        assertRequirement(source, result, contextBuilder);
     }
 }

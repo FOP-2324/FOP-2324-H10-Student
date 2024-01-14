@@ -1,25 +1,18 @@
 package h10;
 
-
-import h10.rubric.Rubrics;
-import org.sourcegrade.jagr.api.rubric.Rubric;
-import org.sourcegrade.jagr.api.rubric.RubricProvider;
+import h10.rubric.H10_RubricProvider;
 
 /**
- * The {@link RubricProvider} for the H10 assignment.
+ * The rubric provider for the public tests.
+ *
+ * @author Nhan Huynh
  */
-public class H10_RubricProviderPublic implements RubricProvider {
+public class H10_RubricProviderPublic extends H10_RubricProvider {
 
     /**
-     * The rubric for this assignment.
+     * Creates a new {@link H10_RubricProviderPublic}.
      */
-    public static final Rubric RUBRIC = Rubrics.read(
-        "H10 | Verzeigerte Strukturen - Public Tests",
-        "rubric.json"
-    );
-
-    @Override
-    public Rubric getRubric() {
-        return RUBRIC;
+    public H10_RubricProviderPublic() {
+        super("Public Tests");
     }
 }
