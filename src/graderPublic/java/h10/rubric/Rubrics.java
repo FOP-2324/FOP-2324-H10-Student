@@ -2,6 +2,7 @@ package h10.rubric;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import h10.json.RubricDeserializer;
 import org.sourcegrade.jagr.api.rubric.Criterion;
 import org.sourcegrade.jagr.api.rubric.Rubric;
 import org.sourcegrade.jagr.api.rubric.RubricProvider;
@@ -14,6 +15,7 @@ import java.io.IOException;
  * @author Nhan Huynh
  * @see Rubric
  * @see RubricProvider
+ * @see RubricDeserializer
  */
 public final class Rubrics {
 
@@ -30,6 +32,7 @@ public final class Rubrics {
      * @param title the title of the rubric
      * @param path  the path to the JSON file
      * @return the rubric read from the given path
+     * @throws IllegalStateException if the rubric cannot be read
      */
     public static Rubric read(String title, String path) {
         ObjectMapper mapper = new ObjectMapper();

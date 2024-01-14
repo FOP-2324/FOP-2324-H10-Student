@@ -1,9 +1,8 @@
 package h10;
 
-import com.google.common.collect.Streams;
+import h10.util.ListItems;
 
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
 /**
@@ -18,44 +17,50 @@ public final class Sets {
      * This class cannot be instantiated.
      */
     private Sets() {
+
     }
 
     /**
-     * Returns an iterator of the elements in the given set.
+     * Returns an iterator over the list items of the given set.
      *
-     * @param set the set to iterate
+     * @param set the set to iterate over
      * @param <T> the type of the elements in the set
-     * @return an iterator of the elements in the given set
+     * @return an iterator over the list items of the given set
+     */
+    public static <T> Iterator<ListItem<T>> itemsIterator(MySet<T> set) {
+        return ListItems.itemIterator(set.head);
+    }
+
+    /**
+     * Returns an iterator over the given set.
+     *
+     * @param set the set to iterate over
+     * @param <T> the type of the elements in the set
+     * @return an iterator over the given set
      */
     public static <T> Iterator<T> iterator(MySet<T> set) {
-        return new Iterator<>() {
-            private ListItem<T> current = set.head;
-
-            @Override
-            public T next() {
-                if (!hasNext()) {
-                    throw new NoSuchElementException();
-                }
-                T element = current.key;
-                current = current.next;
-                return element;
-            }
-
-            @Override
-            public boolean hasNext() {
-                return current != null;
-            }
-        };
+        return ListItems.iterator(set.head);
     }
 
     /**
-     * Returns a stream of the elements in the given set.
+     * Returns a stream to the list items of the given set.
      *
      * @param set the set to stream
      * @param <T> the type of the elements in the set
-     * @return a stream of the elements in the given set
+     * @return a stream to the list items of the given set
+     */
+    public static <T> Stream<ListItem<T>> itemsStream(MySet<T> set) {
+        return ListItems.itemStream(set.head);
+    }
+
+    /**
+     * Returns a stream of the given set.
+     *
+     * @param set the set to stream
+     * @param <T> the type of the elements in the set
+     * @return a stream of the given set
      */
     public static <T> Stream<T> stream(MySet<T> set) {
-        return Streams.stream(() -> iterator(set));
+        return ListItems.stream(set.head);
     }
 }

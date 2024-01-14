@@ -3,29 +3,32 @@ package h10.rubric.h1;
 import h10.ListItem;
 import h10.MySet;
 import h10.MySetInPlace;
-import h10.converter.ListItemConverter;
-import h10.converter.PredicateConverter;
-import h10.utils.TestConstants;
-import h10.utils.TutorAssertions;
-import h10.visitor.VisitorElement;
-import org.junit.jupiter.api.Assumptions;
+import h10.rubric.TestConstants;
+import h10.rubric.TutorAssertions;
+import org.apache.logging.log4j.util.TriConsumer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.converter.ConvertWith;
-import org.junitpioneer.jupiter.json.JsonClasspathSource;
-import org.junitpioneer.jupiter.json.Property;
 import org.sourcegrade.jagr.api.rubric.TestForSubmission;
+import org.sourcegrade.jagr.api.testing.extension.JagrExecutionCondition;
 import org.tudalgo.algoutils.tutor.general.annotation.SkipAfterFirstFailedTest;
+import org.tudalgo.algoutils.tutor.general.assertions.Context;
+import org.tudalgo.algoutils.tutor.general.json.JsonParameterSet;
+import org.tudalgo.algoutils.tutor.general.json.JsonParameterSetTest;
 
 import java.util.Comparator;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
-import java.util.function.Predicate;
 
+/**
+ * Defines public test cases for the H1.2 assignment.
+ *
+ * @author Nhan Huynh
+ */
 @TestForSubmission
 @DisplayName("H1.2 | In-Place")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -36,59 +39,39 @@ import java.util.function.Predicate;
 )
 @SkipAfterFirstFailedTest(TestConstants.SKIP_AFTER_FIRST_FAILED_TEST)
 public class H1_2_TestsPublic extends H1_TestsPublic {
-
     @Override
     public Class<?> getClassType() {
         return MySetInPlace.class;
     }
 
     @Override
-    protected BiFunction<
-        ListItem<VisitorElement<Integer>>,
-        Comparator<? super VisitorElement<Integer>>,
-        MySet<VisitorElement<Integer>>
-        > converter() {
+    protected <T> BiFunction<ListItem<T>, Comparator<T>, MySet<T>> setProvider() {
         return MySetInPlace::new;
     }
 
     @Override
-    public void assertRequirement() {
-        Assumptions.assumeTrue(source != null);
-        Assumptions.assumeTrue(result != null);
-        Assumptions.assumeTrue(context != null);
-        TutorAssertions.assertInPlace(source, result, context);
+    protected <T extends Comparable<T>> TriConsumer<MySet<T>, MySet<T>, Context.Builder<?>> requirementCheck() {
+        return TutorAssertions::assertInPlace;
     }
 
     @Order(0)
     @DisplayName("Die Methode subset(MySet) ninmmt Elemente in die Ergebnismenge nicht auf, falls das Prädikat nicht "
         + "erfüllt wird.")
-    @ParameterizedTest(name = "Elements = {0}")
-    @JsonClasspathSource({
-        TEST_RESOURCE_PATH + "criterion1_testcase1.json",
-        TEST_RESOURCE_PATH + "criterion1_testcase2.json",
-        TEST_RESOURCE_PATH + "criterion1_testcase3.json",
-    })
+    @ExtendWith(JagrExecutionCondition.class)
+    @ParameterizedTest
+    @JsonParameterSetTest(value = "H1_Criterion_01.json", customConverters = CUSTOM_CONVERTERS)
     @Override
-    public void testPredicateFalse(
-        @ConvertWith(ListItemConverter.Int.class) @Property("head") ListItem<Integer> head
-    ) {
-        super.testPredicateFalse(head);
+    public void testDropAll(JsonParameterSet parameters) {
+        super.testDropAll(parameters);
     }
 
     @Order(1)
     @DisplayName("Die Methode subset(MySet) gibt das korrekte Ergebnis für eine komplexe Eingabe zurück.")
-    @ParameterizedTest(name = "Elements = {0}")
-    @JsonClasspathSource({
-        TEST_RESOURCE_PATH + "criterion2_testcase1.json",
-        TEST_RESOURCE_PATH + "criterion2_testcase2.json",
-        TEST_RESOURCE_PATH + "criterion2_testcase3.json",
-    })
+    @ExtendWith(JagrExecutionCondition.class)
+    @ParameterizedTest
+    @JsonParameterSetTest(value = "H1_Criterion_02.json", customConverters = CUSTOM_CONVERTERS)
     @Override
-    public void testPredicateComplex(
-        @ConvertWith(ListItemConverter.Int.class) @Property("head") ListItem<Integer> head,
-        @ConvertWith(PredicateConverter.BasicIntMath.class) @Property("predicate") Predicate<Integer> predicate,
-        @ConvertWith(ListItemConverter.Int.class) @Property("expected") ListItem<Integer> expected
-    ) {
-        super.testPredicateComplex(head, predicate, expected);
+    public void testComplex(JsonParameterSet parameters) {
+        super.testComplex(parameters);
     }
 }

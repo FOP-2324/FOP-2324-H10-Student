@@ -1,6 +1,6 @@
 plugins {
+    alias(libs.plugins.jagr)
     alias(libs.plugins.algomate)
-    alias(libs.plugins.jagr.gradle)
 }
 
 exercise {
@@ -19,13 +19,17 @@ submission {
     requireTests = false
 }
 
-dependencies {
-    implementation(libs.algoutils.student)
-}
-
 configurations.all {
     resolutionStrategy {
-        force("org.junit-pioneer:junit-pioneer:1.7.1")
+        configurations.all {
+            resolutionStrategy {
+                force(
+                    libs.algoutils.student,
+                    libs.algoutils.tutor,
+                    libs.junit.pioneer,
+                )
+            }
+        }
     }
 }
 
@@ -34,10 +38,6 @@ jagr {
         val graderPublic by getting {
             graderName.set("H10-Public")
             rubricProviderName.set("h10.H10_RubricProviderPublic")
-            configureDependencies {
-                implementation(libs.algoutils.tutor)
-                implementation(libs.junit.pioneer)
-            }
         }
     }
 }
