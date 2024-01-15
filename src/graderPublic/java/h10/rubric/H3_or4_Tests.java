@@ -36,15 +36,6 @@ import java.util.function.Consumer;
     threadMode = Timeout.ThreadMode.SEPARATE_THREAD
 )
 public abstract class H3_or4_Tests extends H10_Test {
-    /**
-     * The name of the method to be tested.
-     */
-    protected static final String METHOD_NAME = "difference";
-
-    @Override
-    public String getMethodName() {
-        return METHOD_NAME;
-    }
 
     /**
      * Checks whether the result of the operation matches the expected one.

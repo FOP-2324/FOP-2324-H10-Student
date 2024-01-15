@@ -31,6 +31,17 @@ import java.util.function.BiFunction;
     threadMode = Timeout.ThreadMode.SEPARATE_THREAD
 )
 public abstract class H3_Tests extends H3_or4_Tests {
+
+    /**
+     * The name of the method to be tested.
+     */
+    protected static final String METHOD_NAME = "difference";
+
+    @Override
+    public String getMethodName() {
+        return METHOD_NAME;
+    }
+
     @Override
     protected BiFunction<MySet<Integer>, ListItem<MySet<Integer>>, MySet<Integer>> operation() {
         return (source, inputs) -> source.difference(inputs.key);

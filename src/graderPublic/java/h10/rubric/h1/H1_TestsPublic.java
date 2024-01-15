@@ -115,7 +115,7 @@ public abstract class H1_TestsPublic extends H10_Test {
      */
     protected Context getInputContext(Comparator<?> cmp, Predicate<?> predicate, MySet<?> input) {
         return Assertions2.contextBuilder().subject("Input")
-            .add("Source set", input)
+            .add("Source set", input.toString())
             .add("Comparator", cmp)
             .add("Predicate", predicate)
             .build();
